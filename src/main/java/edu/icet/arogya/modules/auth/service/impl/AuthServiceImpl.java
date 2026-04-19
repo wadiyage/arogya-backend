@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -26,6 +26,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
+        if(userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already in use: " + request.getEmail());
+        }
+
         Role role = roleRepository.findByName(request.getRoleName())
                 .orElseThrow(() -> new RuntimeException("Role not found: " + request.getRoleName()));
 
