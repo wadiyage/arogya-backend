@@ -26,6 +26,10 @@ spring:
 server:
   port: 8080
 
+jwt:
+  secret-key: ${JWT_SECRET}
+  expiration-time: 3600000 # 1 hour in milliseconds
+
 logging:
   level:
     org.hibernate.SQL: debug
