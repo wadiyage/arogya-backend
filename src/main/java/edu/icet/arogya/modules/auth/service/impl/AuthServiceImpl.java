@@ -1,5 +1,8 @@
 package edu.icet.arogya.modules.auth.service.impl;
 
+import edu.icet.arogya.common.exception.BadRequestException;
+import edu.icet.arogya.common.exception.ResourceNotFoundException;
+import edu.icet.arogya.common.exception.UnauthorizedException;
 import edu.icet.arogya.modules.auth.dto.AuthResponse;
 import edu.icet.arogya.modules.auth.dto.LoginRequest;
 import edu.icet.arogya.modules.auth.dto.RegisterRequest;
@@ -27,11 +30,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         if(userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already in use: " + request.getEmail());
+            throw new BadRequestException("Email already in use: " + request.getEmail());
         }
 
         Role role = roleRepository.findByName(request.getRoleName())
-                .orElseThrow(() -> new RuntimeException("Role not found: " + request.getRoleName()));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleName()));
 
         User user = new User();
 
@@ -55,10 +58,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         String token = jwtService.generateToken(user.getEmail(), user.getRole().getName().name());

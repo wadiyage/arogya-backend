@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface UserService {
     UserResponse getUserById(UUID id);
+    UserResponse getUserByEmail(String email);
     List<UserResponse> getAllUsers();
 }

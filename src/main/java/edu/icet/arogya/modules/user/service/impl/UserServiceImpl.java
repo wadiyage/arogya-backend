@@ -1,5 +1,6 @@
 package edu.icet.arogya.modules.user.service.impl;
 
+import edu.icet.arogya.common.exception.ResourceNotFoundException;
 import edu.icet.arogya.modules.user.dto.UserResponse;
 import edu.icet.arogya.modules.user.entity.User;
 import edu.icet.arogya.modules.user.mapper.UserMapper;
@@ -21,7 +22,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        return userMapper.toResponse(user);
+    }
+
+    @Override
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return userMapper.toResponse(user);
     }
 
