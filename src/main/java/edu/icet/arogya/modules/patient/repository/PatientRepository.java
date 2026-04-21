@@ -1,6 +1,13 @@
 package edu.icet.arogya.modules.patient.repository;
 
 import edu.icet.arogya.modules.patient.entity.Patient;
+import edu.icet.arogya.modules.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PatientRepository extends JpaRepository<Patient, Long> { }
+import java.util.Optional;
+import java.util.UUID;
+
+public interface PatientRepository extends JpaRepository<Patient, UUID> {
+    Optional<Patient> findByUser(User user);
+    boolean existsByUser(User user);
+}
