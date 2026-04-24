@@ -59,16 +59,16 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public PatientDetailsResponse getMyProfile(String email) {
-        Patient patient = patientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for email: " + email));
+    public PatientDetailsResponse getMyProfile(UUID userId) {
+        Patient patient = patientRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for user ID: " + userId));
         return patientMapper.mapToDetailsResponse(patient);
     }
 
     @Override
-    public PatientDetailsResponse updateMyProfile(String email, UpdatePatientRequest request) {
-        Patient patient = patientRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for email: " + email));
+    public PatientDetailsResponse updateMyProfile(UUID userId, UpdatePatientRequest request) {
+        Patient patient = patientRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for user ID: " + userId));
 
         if(request.getFullName() != null) patient.setFullName(request.getFullName());
         if(request.getDateOfBirth() != null) patient.setDateOfBirth(request.getDateOfBirth());
@@ -81,27 +81,5 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.save(patient);
         return patientMapper.mapToDetailsResponse(patient);
-    }
-
-    @Override
-    public PatientResponse getPatientById(UUID id) {
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
-        return patientMapper.mapToResponse(patient);
-    }
-
-    @Override
-    public PatientDetailsResponse getPatientDetails(UUID id) {
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
-        return patientMapper.mapToDetailsResponse(patient);
-    }
-
-    @Override
-    public List<PatientResponse> getAllPatients() {
-        List<Patient> patients = patientRepository.findAll();
-        return patients.stream()
-                .map(patientMapper::mapToResponse)
-                .toList();
     }
 }

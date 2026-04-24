@@ -5,6 +5,7 @@ import edu.icet.arogya.application.admin.dto.doctor.CreateDoctorRequest;
 import edu.icet.arogya.application.admin.dto.doctor.DoctorResponse;
 import edu.icet.arogya.application.admin.service.AdminDoctorService;
 import edu.icet.arogya.modules.doctor.dto.DoctorDetailsResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,12 +23,12 @@ public class AdminDoctorController {
     private final AdminDoctorService adminDoctorService;
 
     @PostMapping
-    public ResponseEntity<DoctorResponse> createDoctor(@RequestBody CreateDoctorRequest request) {
+    public ResponseEntity<@NonNull DoctorResponse> createDoctor(@RequestBody CreateDoctorRequest request) {
         return ResponseEntity.ok(adminDoctorService.createDoctor(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DoctorDetailsResponse> updateDoctor(
+    public ResponseEntity<@NonNull DoctorDetailsResponse> updateDoctor(
             @PathVariable UUID id,
             @RequestBody AdminUpdateDoctorRequest request
     ) {
@@ -35,7 +36,7 @@ public class AdminDoctorController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<Void> deactivateDoctor(
+    public ResponseEntity<@NonNull Void> deactivateDoctor(
             @PathVariable UUID id,
             @RequestParam boolean available
     ) {
@@ -44,12 +45,12 @@ public class AdminDoctorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DoctorDetailsResponse> getDoctorDetails(@PathVariable UUID id) {
+    public ResponseEntity<@NonNull DoctorDetailsResponse> getDoctorDetails(@PathVariable UUID id) {
         return ResponseEntity.ok(adminDoctorService.getDoctorDetails(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<DoctorResponse>> getAllDoctors() {
+    public ResponseEntity<@NonNull List<DoctorResponse>> getAllDoctors() {
         return ResponseEntity.ok(adminDoctorService.getAllDoctors());
     }
 }

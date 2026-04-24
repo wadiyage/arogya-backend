@@ -11,11 +11,6 @@ import java.util.UUID;
 public interface PatientService {
     PatientResponse createPatient(CreatePatientRequest request);
 
-    PatientDetailsResponse getMyProfile(String email);
-    PatientDetailsResponse updateMyProfile(String email, UpdatePatientRequest request);
-
-    PatientResponse getPatientById(UUID id);
-    PatientDetailsResponse getPatientDetails(UUID id);
-
-    List<PatientResponse> getAllPatients();
+    PatientDetailsResponse getMyProfile(UUID userId);
+    PatientDetailsResponse updateMyProfile(UUID userId, UpdatePatientRequest request);
 }
