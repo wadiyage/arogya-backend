@@ -20,7 +20,7 @@ public class DoctorDetailsResponse {
     private String specialization;
 
     private String licenseNumber;
-    private String qualifications;
+    private String qualification;
 
     private String phoneNumber;
 

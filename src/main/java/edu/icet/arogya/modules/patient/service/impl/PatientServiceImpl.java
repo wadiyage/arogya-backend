@@ -12,6 +12,7 @@ import edu.icet.arogya.modules.patient.mapper.PatientMapper;
 import edu.icet.arogya.modules.patient.repository.PatientRepository;
 import edu.icet.arogya.modules.patient.service.PatientService;
 import edu.icet.arogya.modules.user.entity.User;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import edu.icet.arogya.modules.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class PatientServiceImpl implements PatientService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + request.getUserId()));
 
-        if(!user.getRole().getName().equals("PATIENT")) {
+        if(user.getRole().getName() != RoleName.PATIENT) {
             throw new UnauthorizedException("User with ID: " + request.getUserId() + " is not a patient");
         }
 
@@ -67,7 +68,7 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public PatientDetailsResponse updateMyProfile(UUID userId, UpdatePatientRequest request) {
-        Patient patient = patientRepository.findById(userId)
+        Patient patient = patientRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for user ID: " + userId));
 
         if(request.getFullName() != null) patient.setFullName(request.getFullName());

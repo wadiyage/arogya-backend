@@ -4,10 +4,12 @@ import edu.icet.arogya.modules.medicalrecord.dto.MedicalRecordSummary;
 import edu.icet.arogya.modules.patient.dto.PatientDetailsResponse;
 import edu.icet.arogya.modules.patient.dto.PatientResponse;
 import edu.icet.arogya.modules.patient.entity.Patient;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public class PatientMapper {
     public PatientResponse mapToResponse(Patient patient) {
         return PatientResponse.builder()

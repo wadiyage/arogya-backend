@@ -24,7 +24,7 @@ public class AdminPatientServiceImpl implements AdminPatientService {
 
     @Override
     public PatientDetailsResponse getPatientDetails(UUID id) {
-        Patient patient = patientRepository.findByUserId(id)
+        Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
 
         return patientMapper.mapToDetailsResponse(patient);
@@ -40,7 +40,7 @@ public class AdminPatientServiceImpl implements AdminPatientService {
 
     @Override
     public PatientDetailsResponse updatePatient(UUID id, AdminUpdatePatientRequest request) {
-        Patient patient = patientRepository.findByUserId(id)
+        Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
 
         if(request.getFullName() != null) {
@@ -86,7 +86,7 @@ public class AdminPatientServiceImpl implements AdminPatientService {
 
     @Override
     public void deactivatePatient(UUID id) {
-            Patient patient = patientRepository.findByUserId(id)
+            Patient patient = patientRepository.findById(id)
                     .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
             patient.setActive(false);
             patientRepository.save(patient);
@@ -94,7 +94,7 @@ public class AdminPatientServiceImpl implements AdminPatientService {
 
     @Override
     public void activatePatient(UUID id) {
-            Patient patient = patientRepository.findByUserId(id)
+            Patient patient = patientRepository.findById(id)
                     .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
             patient.setActive(true);
             patientRepository.save(patient);

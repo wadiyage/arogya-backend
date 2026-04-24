@@ -7,7 +7,6 @@ import edu.icet.arogya.modules.auth.dto.AuthResponse;
 import edu.icet.arogya.modules.auth.dto.LoginRequest;
 import edu.icet.arogya.modules.auth.dto.RegisterRequest;
 import edu.icet.arogya.modules.auth.service.AuthService;
-import edu.icet.arogya.modules.doctor.service.DoctorService;
 import edu.icet.arogya.modules.patient.dto.CreatePatientRequest;
 import edu.icet.arogya.modules.patient.service.PatientService;
 import edu.icet.arogya.modules.user.entity.Role;
@@ -28,7 +27,6 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
 
     private final PatientService patientService;
-    private final DoctorService doctorService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -37,20 +35,23 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         if(userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new BadRequestException("Email already in use: " + request.getEmail());
+            throw new BadRequestException("Email is already in use: " + request.getEmail());
         }
 
-        if(!request.getRoleName().name().equals("PATIENT")) {
-            throw new UnauthorizedException("Only patients can self-register. Please contact admin to create an account with role: " + request.getRoleName());
+        if(request.getRoleName() != RoleName.PATIENT) {
+            throw new UnauthorizedException(
+                    "Only patients can self-register. Please contact admin to create an account with role: " + request.getRoleName()
+            );
         }
 
         Role role = roleRepository.findByName(RoleName.PATIENT)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: PATIENT"));
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
+        User user = User.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(role)
+                .build();
 
         userRepository.save(user);
 

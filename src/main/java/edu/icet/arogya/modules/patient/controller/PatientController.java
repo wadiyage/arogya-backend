@@ -1,7 +1,6 @@
 package edu.icet.arogya.modules.patient.controller;
 
 import edu.icet.arogya.modules.patient.dto.PatientDetailsResponse;
-import edu.icet.arogya.modules.patient.dto.PatientResponse;
 import edu.icet.arogya.modules.patient.dto.UpdatePatientRequest;
 import edu.icet.arogya.modules.patient.service.PatientService;
 import edu.icet.arogya.security.UserPrincipal;

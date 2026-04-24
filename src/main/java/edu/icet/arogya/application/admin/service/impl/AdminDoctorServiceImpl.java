@@ -10,9 +10,13 @@ import edu.icet.arogya.modules.doctor.dto.DoctorDetailsResponse;
 import edu.icet.arogya.modules.doctor.entity.Doctor;
 import edu.icet.arogya.modules.doctor.mapper.DoctorMapper;
 import edu.icet.arogya.modules.doctor.repository.DoctorRepository;
+import edu.icet.arogya.modules.user.entity.Role;
 import edu.icet.arogya.modules.user.entity.User;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
+import edu.icet.arogya.modules.user.repository.RoleRepository;
 import edu.icet.arogya.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,24 +28,35 @@ public class AdminDoctorServiceImpl implements AdminDoctorService {
 
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
+    private final RoleRepository roleRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     private final DoctorMapper doctorMapper;
 
     @Override
     public DoctorResponse createDoctor(CreateDoctorRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+        if(userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new BadRequestException("Email is already in use: " + request.getEmail());
+        }
 
-        doctorRepository.findByUser(user).ifPresent(d -> {
-            throw new BadRequestException("Doctor profile already exists for user with id: " + request.getUserId());
-        });
+        Role role = roleRepository.findByName(RoleName.DOCTOR)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: DOCTOR"));
+
+        User user = User.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(role)
+                .build();
+
+        userRepository.save(user);
 
         Doctor doctor = Doctor.builder()
                 .user(user)
                 .fullName(request.getFullName())
                 .specialization(request.getSpecialization())
                 .licenseNumber(request.getLicenseNumber())
-                .qualification(request.getQualifications())
+                .qualification(request.getQualification())
                 .phoneNumber(request.getPhoneNumber())
                 .hospitalName(request.getHospitalName())
                 .consultationFee(request.getConsultationFee())
