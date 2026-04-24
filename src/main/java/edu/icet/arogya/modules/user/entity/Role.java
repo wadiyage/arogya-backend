@@ -1,5 +1,6 @@
 package edu.icet.arogya.modules.user.entity;
 
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +12,7 @@ import lombok.*;
 @Entity
 @Table(name = "roles")
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

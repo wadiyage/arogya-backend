@@ -1,6 +1,6 @@
 package edu.icet.arogya.modules.auth.dto;
 
-import edu.icet.arogya.modules.user.entity.RoleName;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import lombok.*;
 
 @Getter

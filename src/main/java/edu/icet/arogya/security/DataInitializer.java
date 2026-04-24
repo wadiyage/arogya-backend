@@ -1,7 +1,7 @@
 package edu.icet.arogya.security;
 
 import edu.icet.arogya.modules.user.entity.Role;
-import edu.icet.arogya.modules.user.entity.RoleName;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import edu.icet.arogya.modules.user.repository.RoleRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

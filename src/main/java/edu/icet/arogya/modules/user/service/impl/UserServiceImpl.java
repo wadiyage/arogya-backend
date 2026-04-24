@@ -23,21 +23,21 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        return userMapper.toResponse(user);
+        return userMapper.mapToResponse(user);
     }
 
     @Override
     public UserResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
-        return userMapper.toResponse(user);
+        return userMapper.mapToResponse(user);
     }
 
     @Override
     public List<UserResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(userMapper::toResponse)
+                .map(userMapper::mapToResponse)
                 .toList();
     }
 }

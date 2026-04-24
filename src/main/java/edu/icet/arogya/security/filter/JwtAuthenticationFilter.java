@@ -1,10 +1,12 @@
 package edu.icet.arogya.security.filter;
 
 import edu.icet.arogya.security.JwtService;
+import edu.icet.arogya.security.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -26,8 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
@@ -37,17 +40,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwt = authHeader.substring(7);
-        String username = jwtService.extractUsername(jwt);
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if(jwtService.isTokenValid(jwt, username)) {
-                String role = jwtService.extractRole(jwt);
+        String email = jwtService.extractUsername(jwt);
+        String role = jwtService.extractRole(jwt);
+        String userIdStr = jwtService.extractUserId(jwt);
+
+        if(email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            if(jwtService.isTokenValid(jwt, email)) {
+                UserPrincipal userPrincipal = new UserPrincipal(
+                        UUID.fromString(userIdStr),
+                        email,
+                        null,
+                        role
+                );
 
                 UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
-                        username,
+                        userPrincipal,
                         null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        userPrincipal.getAuthorities()
                 );
 
                 authToken.setDetails(

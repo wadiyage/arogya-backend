@@ -1,0 +1,7 @@
+package edu.icet.arogya.modules.patient.entity.enums;
+
+public enum Gender {
+    MALE,
+    FEMALE,
+    OTHER
+}
