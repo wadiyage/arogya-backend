@@ -3,10 +3,10 @@ package edu.icet.arogya.modules.patient.service.impl;
 import edu.icet.arogya.common.exception.BadRequestException;
 import edu.icet.arogya.common.exception.ResourceNotFoundException;
 import edu.icet.arogya.common.exception.UnauthorizedException;
-import edu.icet.arogya.modules.medicalrecord.entity.MedicalRecord;
 import edu.icet.arogya.modules.patient.dto.CreatePatientRequest;
 import edu.icet.arogya.modules.patient.dto.PatientDetailsResponse;
 import edu.icet.arogya.modules.patient.dto.PatientResponse;
+import edu.icet.arogya.modules.patient.dto.UpdatePatientRequest;
 import edu.icet.arogya.modules.patient.entity.Patient;
 import edu.icet.arogya.modules.patient.mapper.PatientMapper;
 import edu.icet.arogya.modules.patient.repository.PatientRepository;
@@ -14,10 +14,12 @@ import edu.icet.arogya.modules.patient.service.PatientService;
 import edu.icet.arogya.modules.user.entity.User;
 import edu.icet.arogya.modules.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Service
 @AllArgsConstructor
 public class PatientServiceImpl implements PatientService {
 
@@ -54,6 +56,31 @@ public class PatientServiceImpl implements PatientService {
         patientRepository.save(patient);
 
         return patientMapper.mapToResponse(patient);
+    }
+
+    @Override
+    public PatientDetailsResponse getMyProfile(String email) {
+        Patient patient = patientRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for email: " + email));
+        return patientMapper.mapToDetailsResponse(patient);
+    }
+
+    @Override
+    public PatientDetailsResponse updateMyProfile(String email, UpdatePatientRequest request) {
+        Patient patient = patientRepository.findByUserEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for email: " + email));
+
+        if(request.getFullName() != null) patient.setFullName(request.getFullName());
+        if(request.getDateOfBirth() != null) patient.setDateOfBirth(request.getDateOfBirth());
+        if(request.getGender() != null) patient.setGender(request.getGender());
+        if(request.getBloodGroup() != null) patient.setBloodGroup(request.getBloodGroup());
+        if(request.getPhoneNumber() != null) patient.setPhoneNumber(request.getPhoneNumber());
+        if(request.getAddress() != null) patient.setAddress(request.getAddress());
+        if(request.getEmergencyContactName() != null) patient.setEmergencyContactName(request.getEmergencyContactName());
+        if(request.getEmergencyContactNumber() != null) patient.setEmergencyContactNumber(request.getEmergencyContactNumber());
+
+        patientRepository.save(patient);
+        return patientMapper.mapToDetailsResponse(patient);
     }
 
     @Override

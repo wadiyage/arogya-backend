@@ -1,5 +1,6 @@
 package edu.icet.arogya.modules.user.entity;
 
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.*;
 

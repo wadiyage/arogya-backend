@@ -1,6 +1,8 @@
 package edu.icet.arogya.modules.patient.entity;
 
 import edu.icet.arogya.modules.medicalrecord.entity.MedicalRecord;
+import edu.icet.arogya.modules.patient.entity.enums.BloodGroup;
+import edu.icet.arogya.modules.patient.entity.enums.Gender;
 import edu.icet.arogya.modules.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,9 +33,11 @@ public class Patient {
 
     private LocalDate dateOfBirth;
 
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
-    private String bloodGroup;
+    @Enumerated(EnumType.STRING)
+    private BloodGroup bloodGroup;
 
     private String phoneNumber;
 

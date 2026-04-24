@@ -1,4 +1,4 @@
-package edu.icet.arogya.modules.user.entity;
+package edu.icet.arogya.modules.user.entity.enums;
 
 public enum RoleName {
     PATIENT,

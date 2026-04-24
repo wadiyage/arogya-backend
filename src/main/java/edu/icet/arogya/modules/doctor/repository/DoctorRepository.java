@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
+    Optional<Doctor> findByUserId(UUID userId);
     Optional<Doctor> findByUserEmail(String email);
 
     Optional<Doctor> findByUser(User user);
