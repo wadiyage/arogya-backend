@@ -16,12 +16,13 @@ import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import edu.icet.arogya.modules.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class PatientServiceImpl implements PatientService {
 
     private final UserRepository userRepository;

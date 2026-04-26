@@ -8,14 +8,19 @@ import edu.icet.arogya.modules.patient.dto.PatientResponse;
 import edu.icet.arogya.modules.patient.entity.Patient;
 import edu.icet.arogya.modules.patient.mapper.PatientMapper;
 import edu.icet.arogya.modules.patient.repository.PatientRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminPatientServiceImpl implements AdminPatientService {
 
     private final PatientRepository patientRepository;
@@ -31,11 +36,9 @@ public class AdminPatientServiceImpl implements AdminPatientService {
     }
 
     @Override
-    public List<PatientResponse> getAllPatients() {
-        List<Patient> patients = patientRepository.findAll();
-        return patients.stream()
-                .map(patientMapper::mapToResponse)
-                .toList();
+    public Page<@NonNull PatientResponse> getAllPatients(Pageable pageable) {
+        return patientRepository.findAll(pageable)
+                .map(patientMapper::mapToResponse);
     }
 
     @Override

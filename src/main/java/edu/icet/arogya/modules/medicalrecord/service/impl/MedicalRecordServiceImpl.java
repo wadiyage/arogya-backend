@@ -14,11 +14,13 @@ import edu.icet.arogya.modules.patient.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private final PatientRepository patientRepository;

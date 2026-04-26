@@ -1,0 +1,75 @@
+package edu.icet.arogya.modules.appointment.service.impl;
+
+import edu.icet.arogya.common.exception.BadRequestException;
+import edu.icet.arogya.common.exception.ResourceNotFoundException;
+import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
+import edu.icet.arogya.modules.appointment.dto.CreateAppointmentRequest;
+import edu.icet.arogya.modules.appointment.entity.Appointment;
+import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
+import edu.icet.arogya.modules.appointment.mapper.AppointmentMapper;
+import edu.icet.arogya.modules.appointment.repository.AppointmentRepository;
+import edu.icet.arogya.modules.appointment.service.AppointmentService;
+import edu.icet.arogya.modules.appointment.service.PatientAppointmentService;
+import edu.icet.arogya.modules.doctor.entity.Doctor;
+import edu.icet.arogya.modules.doctor.repository.DoctorRepository;
+import edu.icet.arogya.modules.patient.entity.Patient;
+import edu.icet.arogya.modules.patient.repository.PatientRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class PatientAppointmentServiceImpl implements PatientAppointmentService {
+
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
+
+    private final AppointmentService appointmentService;
+
+    private final AppointmentMapper appointmentMapper;
+
+    @Override
+    public AppointmentResponse bookAppointment(UUID userId, CreateAppointmentRequest request) {
+        Patient patient = patientRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found for userId: " + userId));
+
+        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + request.getDoctorId()));
+
+        Appointment appointment = appointmentService.book(patient, doctor, request);
+        return appointmentMapper.mapToResponse(appointment);
+    }
+
+    @Override
+    public List<AppointmentResponse> getMyAppointments(UUID userId) {
+        Patient patient = patientRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found for userId: " + userId));
+
+        List<Appointment> appointments = appointmentRepository.findByPatient(patient);
+
+        return appointments.stream()
+                .map(appointmentMapper::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    public void cancelAppointment(UUID userId, UUID appointmentId) {
+        Patient patient = patientRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found for userId: " + userId));
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
+
+        if(!appointment.getPatient().getId().equals(patient.getId())) {
+            throw new BadRequestException("Unauthorized access to appointment.");
+        }
+
+        appointmentService.cancel(appointment);
+    }
+}
