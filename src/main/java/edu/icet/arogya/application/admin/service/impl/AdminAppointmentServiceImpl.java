@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static edu.icet.arogya.modules.appointment.validation.AppointmentStatusTransitionValidator.validate;
@@ -106,5 +107,31 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
                 "Force cancelled by admin",
                 "ADMIN"
         );
+    }
+
+    @Override
+    public void bulkCancelAppointmentsByAdmin(List<UUID> appointmentIds, String reason) {
+        if(appointmentIds == null || appointmentIds.isEmpty()) {
+            throw new BadRequestException("Appointment IDs cannot be null or empty");
+        }
+
+        for (UUID appointmentId: appointmentIds) {
+            Appointment appointment = appointmentRepository.findById(appointmentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
+
+            AppointmentStatus oldStatus = appointment.getStatus();
+            if(oldStatus == AppointmentStatus.COMPLETED || oldStatus == AppointmentStatus.CANCELLED) {
+                continue; // Skip appointments that are already completed or cancelled
+            }
+
+            appointmentService.cancel(appointment);
+            appointmentAuditService.logStatusChange(
+                    appointment,
+                    oldStatus,
+                    AppointmentStatus.CANCELLED,
+                    reason != null ? reason : "Force cancelled by admin",
+                    "ADMIN"
+            );
+        }
     }
 }
