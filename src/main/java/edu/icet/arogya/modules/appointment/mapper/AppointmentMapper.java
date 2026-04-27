@@ -2,7 +2,9 @@ package edu.icet.arogya.modules.appointment.mapper;
 
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.entity.Appointment;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AppointmentMapper {
     public AppointmentResponse mapToResponse(Appointment appointment) {
         return AppointmentResponse.builder()

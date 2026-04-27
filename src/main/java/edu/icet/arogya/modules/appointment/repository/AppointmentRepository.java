@@ -5,6 +5,8 @@ import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import edu.icet.arogya.modules.doctor.entity.Doctor;
 import edu.icet.arogya.modules.patient.entity.Patient;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -23,7 +25,7 @@ public interface AppointmentRepository extends
             LocalDate appointmentDate
     );
 
-    List<Appointment> findByPatient(Patient patient);
+    Page<@NonNull Appointment> findByPatient(Patient patient, Pageable pageable);
 
     List<Appointment> findByDoctorAndStatus(
             Doctor doctor,

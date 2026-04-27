@@ -18,5 +18,4 @@ public class CreateAppointmentRequest {
     private LocalTime endTime;
     private String reason;
     private String notes;
-
 }

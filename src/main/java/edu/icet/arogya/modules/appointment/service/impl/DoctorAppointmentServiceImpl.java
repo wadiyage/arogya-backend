@@ -3,6 +3,7 @@ package edu.icet.arogya.modules.appointment.service.impl;
 import edu.icet.arogya.common.exception.BadRequestException;
 import edu.icet.arogya.common.exception.ResourceNotFoundException;
 import edu.icet.arogya.common.exception.UnauthorizedException;
+import edu.icet.arogya.modules.appointment.audit.service.AppointmentAuditService;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.entity.Appointment;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
@@ -32,6 +33,8 @@ public class DoctorAppointmentServiceImpl implements DoctorAppointmentService {
     private final AppointmentMapper appointmentMapper;
 
     private final AppointmentService appointmentService;
+
+    private final AppointmentAuditService appointmentAuditService;
 
     @Override
     public List<AppointmentResponse> getMySchedule(UUID userId) {
@@ -70,17 +73,27 @@ public class DoctorAppointmentServiceImpl implements DoctorAppointmentService {
             throw new BadRequestException("Doctor is currently unavailable to update appointment status");
         }
 
+        AppointmentStatus oldStatus = appointment.getStatus();
+
         if(status == AppointmentStatus.CANCELLED) {
             throw new BadRequestException("Doctors cannot cancel appointments. Please ask the patient to cancel.");
         }
 
-        if(status == AppointmentStatus.COMPLETED && appointment.getStatus() != AppointmentStatus.IN_PROGRESS) {
+        if(status == AppointmentStatus.COMPLETED && oldStatus != AppointmentStatus.IN_PROGRESS) {
             throw new BadRequestException("Only appointments that are in progress can be marked as completed.");
         }
 
         Appointment updated = appointmentService.updateStatus(
                 appointment,
                 status
+        );
+
+        appointmentAuditService.logStatusChange(
+                appointment,
+                oldStatus,
+                status,
+                "Updated by doctor",
+                "DOCTOR"
         );
 
         return appointmentMapper.mapToResponse(updated);

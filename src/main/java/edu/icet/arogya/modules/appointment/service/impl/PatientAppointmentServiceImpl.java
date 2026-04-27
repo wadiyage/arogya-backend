@@ -2,6 +2,7 @@ package edu.icet.arogya.modules.appointment.service.impl;
 
 import edu.icet.arogya.common.exception.BadRequestException;
 import edu.icet.arogya.common.exception.ResourceNotFoundException;
+import edu.icet.arogya.modules.appointment.audit.service.AppointmentAuditService;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.dto.CreateAppointmentRequest;
 import edu.icet.arogya.modules.appointment.entity.Appointment;
@@ -14,10 +15,14 @@ import edu.icet.arogya.modules.doctor.entity.Doctor;
 import edu.icet.arogya.modules.doctor.repository.DoctorRepository;
 import edu.icet.arogya.modules.patient.entity.Patient;
 import edu.icet.arogya.modules.patient.repository.PatientRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,6 +39,8 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
 
     private final AppointmentMapper appointmentMapper;
 
+    private final AppointmentAuditService appointmentAuditService;
+
     @Override
     public AppointmentResponse bookAppointment(UUID userId, CreateAppointmentRequest request) {
         Patient patient = patientRepository.findByUserId(userId)
@@ -43,19 +50,25 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + request.getDoctorId()));
 
         Appointment appointment = appointmentService.book(patient, doctor, request);
+        appointmentAuditService.logStatusChange(
+                appointment,
+                null,
+                appointment.getStatus(),
+                "Appointment booked",
+                "PATIENT"
+        );
+
         return appointmentMapper.mapToResponse(appointment);
     }
 
     @Override
-    public List<AppointmentResponse> getMyAppointments(UUID userId) {
+    public Page<@NonNull AppointmentResponse> getMyAppointments(UUID userId, Pageable pageable) {
         Patient patient = patientRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found for userId: " + userId));
 
-        List<Appointment> appointments = appointmentRepository.findByPatient(patient);
+        Page<@NonNull Appointment> page = appointmentRepository.findByPatient(patient, pageable);
 
-        return appointments.stream()
-                .map(appointmentMapper::mapToResponse)
-                .toList();
+        return page.map(appointmentMapper::mapToResponse);
     }
 
     @Override
@@ -70,6 +83,24 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
             throw new BadRequestException("Unauthorized access to appointment.");
         }
 
+        AppointmentStatus oldStatus = appointment.getStatus();
+
+        if(oldStatus == AppointmentStatus.CANCELLED) {
+            throw new BadRequestException("Appointment is already canceled.");
+        }
+
+        if(appointment.getAppointmentDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Cannot cancel past appointments.");
+        }
+
         appointmentService.cancel(appointment);
+
+        appointmentAuditService.logStatusChange(
+                appointment,
+                oldStatus,
+                AppointmentStatus.CANCELLED,
+                "Cancelled by patient",
+                "PATIENT"
+        );
     }
 }
