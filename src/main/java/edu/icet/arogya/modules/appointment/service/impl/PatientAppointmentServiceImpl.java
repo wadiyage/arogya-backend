@@ -2,6 +2,8 @@ package edu.icet.arogya.modules.appointment.service.impl;
 
 import edu.icet.arogya.common.exception.BadRequestException;
 import edu.icet.arogya.common.exception.ResourceNotFoundException;
+import edu.icet.arogya.modules.appointment.audit.dto.AppointmentAuditLogRequest;
+import edu.icet.arogya.modules.appointment.audit.entity.enums.AuditActionType;
 import edu.icet.arogya.modules.appointment.audit.service.AppointmentAuditService;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.dto.CreateAppointmentRequest;
@@ -51,11 +53,16 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
 
         Appointment appointment = appointmentService.book(patient, doctor, request);
         appointmentAuditService.logStatusChange(
-                appointment,
-                null,
-                appointment.getStatus(),
-                "Appointment booked",
-                "PATIENT"
+                AppointmentAuditLogRequest.builder()
+                        .appointment(appointment)
+                        .oldStatus(null)
+                        .newStatus(appointment.getStatus())
+                        .actionType(AuditActionType.APPOINTMENT_BOOKED)
+                        .reason("Appointment booked")
+                        .userId(userId)
+                        .userRole(patient.getUser().getRole().getName())
+                        .metadata(null)
+                        .build()
         );
 
         return appointmentMapper.mapToResponse(appointment);
@@ -96,11 +103,16 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
         appointmentService.cancel(appointment);
 
         appointmentAuditService.logStatusChange(
-                appointment,
-                oldStatus,
-                AppointmentStatus.CANCELLED,
-                "Cancelled by patient",
-                "PATIENT"
+                AppointmentAuditLogRequest.builder()
+                        .appointment(appointment)
+                        .oldStatus(oldStatus)
+                        .newStatus(AppointmentStatus.CANCELLED)
+                        .actionType(AuditActionType.APPOINTMENT_CANCELLED_BY_PATIENT)
+                        .reason("Cancelled by patient")
+                        .userId(userId)
+                        .userRole(patient.getUser().getRole().getName())
+                        .metadata(null)
+                        .build()
         );
     }
 }

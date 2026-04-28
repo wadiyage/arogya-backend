@@ -1,14 +1,15 @@
 package edu.icet.arogya.modules.appointment.audit.service;
 
-import edu.icet.arogya.modules.appointment.entity.Appointment;
-import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
+import edu.icet.arogya.modules.appointment.audit.dto.AppointmentAuditLogRequest;
+import edu.icet.arogya.modules.appointment.audit.dto.AppointmentAuditLogResponse;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.UUID;
 
 public interface AppointmentAuditService {
-    void logStatusChange(
-            Appointment appointment,
-            AppointmentStatus oldStatus,
-            AppointmentStatus newStatus,
-            String reason,
-            String changedBy
-    );
+    void logStatusChange(AppointmentAuditLogRequest request);
+
+    Page<@NonNull AppointmentAuditLogResponse> getLogsByAppointment(UUID appointmentId, Pageable pageable);
 }

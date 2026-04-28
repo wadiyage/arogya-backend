@@ -3,6 +3,7 @@ package edu.icet.arogya.application.admin.service;
 import edu.icet.arogya.modules.appointment.dto.filter.AppointmentFilterRequest;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +16,8 @@ public interface AdminAppointmentService {
             AppointmentFilterRequest filter,
             Pageable pageable
     );
-    AppointmentResponse overrideStatus(UUID appointmentId, AppointmentStatus status, String reason);
-    void cancelAppointmentByAdmin(UUID appointmentId);
+    AppointmentResponse overrideStatus(UUID appointmentId, AppointmentStatus status, String reason, UUID adminId, RoleName role);
+    void cancelAppointmentByAdmin(UUID appointmentId, UUID adminId, RoleName role);
 
-    void bulkCancelAppointmentsByAdmin(List<UUID> appointmentIds, String reason);
+    void bulkCancelAppointmentsByAdmin(List<UUID> appointmentIds, String reason, UUID adminId, RoleName role);
 }

@@ -3,6 +3,8 @@ package edu.icet.arogya.application.admin.service.impl;
 import edu.icet.arogya.application.admin.service.AdminAppointmentService;
 import edu.icet.arogya.common.exception.BadRequestException;
 import edu.icet.arogya.common.exception.ResourceNotFoundException;
+import edu.icet.arogya.modules.appointment.audit.dto.AppointmentAuditLogRequest;
+import edu.icet.arogya.modules.appointment.audit.entity.enums.AuditActionType;
 import edu.icet.arogya.modules.appointment.audit.service.AppointmentAuditService;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.dto.filter.AppointmentFilterRequest;
@@ -12,6 +14,7 @@ import edu.icet.arogya.modules.appointment.mapper.AppointmentMapper;
 import edu.icet.arogya.modules.appointment.repository.AppointmentRepository;
 import edu.icet.arogya.modules.appointment.service.AppointmentService;
 import edu.icet.arogya.modules.appointment.specification.AppointmentSpecification;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -53,7 +56,9 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
     public AppointmentResponse overrideStatus(
             UUID appointmentId,
             AppointmentStatus status,
-            String reason
+            String reason,
+            UUID adminId,
+            RoleName role
     ) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
@@ -69,19 +74,23 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         Appointment updated = appointmentService.updateStatus(appointment, status);
 
         appointmentAuditService.logStatusChange(
-                updated,
-                oldStatus,
-                status,
-                reason,
-                "ADMIN"
-
+                AppointmentAuditLogRequest.builder()
+                        .appointment(updated)
+                        .oldStatus(oldStatus)
+                        .newStatus(status)
+                        .actionType(AuditActionType.APPOINTMENT_STATUS_OVERRIDDEN)
+                        .reason(reason)
+                        .userId(adminId)
+                        .userRole(role)
+                        .metadata(null)
+                        .build()
         );
 
         return appointmentMapper.mapToResponse(updated);
     }
 
     @Override
-    public void cancelAppointmentByAdmin(UUID appointmentId) {
+    public void cancelAppointmentByAdmin(UUID appointmentId, UUID adminId, RoleName role) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
 
@@ -101,16 +110,21 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         appointmentService.cancel(appointment);
 
         appointmentAuditService.logStatusChange(
-                appointment,
-                oldStatus,
-                AppointmentStatus.CANCELLED,
-                "Force cancelled by admin",
-                "ADMIN"
+                AppointmentAuditLogRequest.builder()
+                        .appointment(appointment)
+                        .oldStatus(oldStatus)
+                        .newStatus(AppointmentStatus.CANCELLED)
+                        .actionType(AuditActionType.APPOINTMENT_CANCELLED_BY_ADMIN)
+                        .reason("Force cancelled by admin")
+                        .userId(adminId)
+                        .userRole(role)
+                        .metadata(null)
+                        .build()
         );
     }
 
     @Override
-    public void bulkCancelAppointmentsByAdmin(List<UUID> appointmentIds, String reason) {
+    public void bulkCancelAppointmentsByAdmin(List<UUID> appointmentIds, String reason, UUID adminId, RoleName role) {
         if(appointmentIds == null || appointmentIds.isEmpty()) {
             throw new BadRequestException("Appointment IDs cannot be null or empty");
         }
@@ -126,11 +140,16 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
 
             appointmentService.cancel(appointment);
             appointmentAuditService.logStatusChange(
-                    appointment,
-                    oldStatus,
-                    AppointmentStatus.CANCELLED,
-                    reason != null ? reason : "Force cancelled by admin",
-                    "ADMIN"
+                    AppointmentAuditLogRequest.builder()
+                            .appointment(appointment)
+                            .oldStatus(oldStatus)
+                            .newStatus(AppointmentStatus.CANCELLED)
+                            .actionType(AuditActionType.APPOINTMENT_BULK_CANCELLED)
+                            .reason(reason != null ? reason : "Force cancelled by admin")
+                            .userId(adminId)
+                            .userRole(role)
+                            .metadata(null)
+                            .build()
             );
         }
     }

@@ -1,7 +1,9 @@
 package edu.icet.arogya.modules.appointment.audit.entity;
 
+import edu.icet.arogya.modules.appointment.audit.entity.enums.AuditActionType;
 import edu.icet.arogya.modules.appointment.entity.Appointment;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,11 +32,22 @@ public class AppointmentAuditLog {
     @Enumerated(EnumType.STRING)
     private AppointmentStatus newStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuditActionType actionType;
+
     @Column(length = 500)
     private String reason;
 
     @Column(nullable = false)
-    private String changedBy;
+    private UUID changedByUserId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RoleName changedByRole;
+
+    @Column(columnDefinition = "TEXT")
+    private String metadata;
 
     @Column(nullable = false)
     private LocalDateTime changedAt;

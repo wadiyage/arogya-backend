@@ -3,6 +3,8 @@ package edu.icet.arogya.modules.appointment.service.impl;
 import edu.icet.arogya.common.exception.BadRequestException;
 import edu.icet.arogya.common.exception.ResourceNotFoundException;
 import edu.icet.arogya.common.exception.UnauthorizedException;
+import edu.icet.arogya.modules.appointment.audit.dto.AppointmentAuditLogRequest;
+import edu.icet.arogya.modules.appointment.audit.entity.enums.AuditActionType;
 import edu.icet.arogya.modules.appointment.audit.service.AppointmentAuditService;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.entity.Appointment;
@@ -89,11 +91,16 @@ public class DoctorAppointmentServiceImpl implements DoctorAppointmentService {
         );
 
         appointmentAuditService.logStatusChange(
-                appointment,
-                oldStatus,
-                status,
-                "Updated by doctor",
-                "DOCTOR"
+                AppointmentAuditLogRequest.builder()
+                        .appointment(appointment)
+                        .oldStatus(oldStatus)
+                        .newStatus(status)
+                        .actionType(AuditActionType.APPOINTMENT_STATUS_UPDATED)
+                        .reason("Updated by doctor")
+                        .userId(userId)
+                        .userRole(doctor.getUser().getRole().getName())
+                        .metadata(null)
+                        .build()
         );
 
         return appointmentMapper.mapToResponse(updated);
