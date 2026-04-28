@@ -8,11 +8,13 @@ import edu.icet.arogya.modules.doctor.repository.DoctorRepository;
 import edu.icet.arogya.modules.doctor.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;

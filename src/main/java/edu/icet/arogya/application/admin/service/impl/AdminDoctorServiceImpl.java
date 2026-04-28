@@ -15,15 +15,20 @@ import edu.icet.arogya.modules.user.entity.User;
 import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import edu.icet.arogya.modules.user.repository.RoleRepository;
 import edu.icet.arogya.modules.user.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminDoctorServiceImpl implements AdminDoctorService {
 
     private final UserRepository userRepository;
@@ -112,10 +117,8 @@ public class AdminDoctorServiceImpl implements AdminDoctorService {
     }
 
     @Override
-    public List<DoctorResponse> getAllDoctors() {
-        List<Doctor> doctors = doctorRepository.findAll();
-        return doctors.stream()
-                .map(doctorMapper::mapToResponse)
-                .toList();
+    public Page<@NonNull DoctorResponse> getAllDoctors(Pageable pageable) {
+        return doctorRepository.findAll(pageable)
+                .map(doctorMapper::mapToResponse);
     }
 }

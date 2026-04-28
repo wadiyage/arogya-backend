@@ -6,14 +6,19 @@ import edu.icet.arogya.modules.user.entity.User;
 import edu.icet.arogya.modules.user.mapper.UserMapper;
 import edu.icet.arogya.modules.user.repository.UserRepository;
 import edu.icet.arogya.modules.user.service.UserService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -34,10 +39,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .map(userMapper::mapToResponse)
-                .toList();
+    public Page<@NonNull UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::mapToResponse);
     }
 }
