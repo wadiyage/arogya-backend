@@ -61,4 +61,79 @@ public interface AppointmentRepository extends
             LocalTime endTime,
             List<AppointmentStatus> statuses
     );
+
+
+    @Query("SELECT COUNT(a) FROM Appointment a")
+    long countTotalAppointments();
+
+    @Query("""
+            SELECT COUNT(a)
+            FROM Appointment a
+            WHERE a.appointmentDate = :date
+            """)
+    long countAppointmentsByDate(LocalDate date);
+
+    @Query("""
+            SELECT COUNT(a)
+            FROM Appointment a
+            WHERE a.status = :status
+            """)
+    long countAppointmentsByStatus(AppointmentStatus status);
+
+
+    @Query("""
+            SELECT COUNT(a)
+            FROM Appointment a
+            WHERE a.appointmentDate BETWEEN :start AND :end
+            """)
+    long countAppointmentsBetweenDates(LocalDate start, LocalDate end);
+
+
+    @Query("""
+            SELECT 
+                a.appointmentDate, 
+                COUNT(a),
+                SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.COMPLETED THEN 1 ELSE 0 END),
+                SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.CANCELLED THEN 1 ELSE 0 END)
+            FROM Appointment a
+            WHERE a.appointmentDate BETWEEN :start AND :end
+            GROUP BY a.appointmentDate
+            ORDER BY a.appointmentDate
+            """)
+    List<Object[]> findDailyAppointmentTrendsWithStatuses(LocalDate start, LocalDate end);
+
+
+    @Query("""
+            SELECT
+                a.doctor.id,
+                a.doctor.user.fullName,
+                COUNT(a),
+                SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.COMPLETED THEN 1 ELSE 0 END)
+            FROM Appointment a
+            WHERE a.appointmentDate = :date
+            GROUP BY a.doctor.id, a.doctor.user.fullName
+            """)
+    List<Object[]> findDoctorWorkload(LocalDate date);
+
+
+    @Query("""
+            SELECT a.appointmentDate, COUNT(a)
+            FROM Appointment a
+            WHERE a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.CANCELLED
+                AND a.appointmentDate BETWEEN :start AND :end
+            GROUP BY a.appointmentDate
+            ORDER BY a.appointmentDate
+            """)
+    List<Object[]> findDailyCancellations(LocalDate start, LocalDate end);
+
+
+    @Query("""
+            SELECT a.appointmentDate, COUNT(a)
+            FROM Appointment a
+            WHERE a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.NO_SHOW
+                AND a.appointmentDate BETWEEN :start AND :end
+            GROUP BY a.appointmentDate
+            ORDER BY a.appointmentDate
+            """)
+    List<Object[]> findDailyNoShows(LocalDate start, LocalDate end);
 }

@@ -4,6 +4,7 @@ import edu.icet.arogya.modules.doctor.entity.Doctor;
 import edu.icet.arogya.modules.user.entity.User;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -14,4 +15,11 @@ public interface DoctorRepository extends JpaRepository<@NonNull Doctor, @NonNul
 
     Optional<Doctor> findByUser(User user);
     boolean existsByUser(User user);
+
+    @Query("""
+            SELECT COUNT(d)
+            FROM Doctor d
+            WHERE d.isAvailable = true
+            """)
+    long countActiveDoctors();
 }
