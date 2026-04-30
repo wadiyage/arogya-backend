@@ -3,7 +3,7 @@ package edu.icet.arogya.modules.appointment.controller;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.dto.CreateAppointmentRequest;
 import edu.icet.arogya.modules.appointment.service.PatientAppointmentService;
-import edu.icet.arogya.security.UserPrincipal;
+import edu.icet.arogya.security.user.UserPrincipal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController

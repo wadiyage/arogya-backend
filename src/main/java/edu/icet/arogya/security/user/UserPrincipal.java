@@ -1,4 +1,4 @@
-package edu.icet.arogya.security;
+package edu.icet.arogya.security.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

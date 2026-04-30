@@ -1,6 +1,6 @@
-package edu.icet.arogya.security;
+package edu.icet.arogya.config;
 
-import edu.icet.arogya.security.filter.JwtAuthenticationFilter;
+import edu.icet.arogya.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

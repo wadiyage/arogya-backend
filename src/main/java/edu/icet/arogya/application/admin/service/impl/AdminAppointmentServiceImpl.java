@@ -17,6 +17,8 @@ import edu.icet.arogya.modules.appointment.specification.AppointmentSpecificatio
 import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,13 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         return page.map(appointmentMapper::mapToResponse);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "dashboardOverview", allEntries = true),
+            @CacheEvict(value = "dashboardTrends", allEntries = true),
+            @CacheEvict(value = "dashboardDoctorWorkload", allEntries = true),
+            @CacheEvict(value = "dashboardCancellations", allEntries = true),
+            @CacheEvict(value = "dashboardNoShows", allEntries = true)
+    })
     @Override
     public AppointmentResponse overrideStatus(
             UUID appointmentId,
@@ -89,6 +98,13 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         return appointmentMapper.mapToResponse(updated);
     }
 
+    @CacheEvict(value = {
+            "dashboard:overview",
+            "dashboard:trends",
+            "dashboard:doctorWorkload",
+            "dashboard:cancellations",
+            "dashboard:noShows"
+    }, allEntries = true)
     @Override
     public void cancelAppointmentByAdmin(UUID appointmentId, UUID adminId, RoleName role) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -123,6 +139,13 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         );
     }
 
+    @CacheEvict(value = {
+            "dashboard:overview",
+            "dashboard:trends",
+            "dashboard:doctorWorkload",
+            "dashboard:cancellations",
+            "dashboard:noShows"
+    }, allEntries = true)
     @Override
     public void bulkCancelAppointmentsByAdmin(List<UUID> appointmentIds, String reason, UUID adminId, RoleName role) {
         if(appointmentIds == null || appointmentIds.isEmpty()) {

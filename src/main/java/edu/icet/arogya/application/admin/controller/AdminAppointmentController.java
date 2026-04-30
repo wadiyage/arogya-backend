@@ -6,7 +6,7 @@ import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.dto.BulkCancelRequest;
 import edu.icet.arogya.modules.appointment.dto.filter.AppointmentFilterRequest;
 import edu.icet.arogya.modules.user.entity.enums.RoleName;
-import edu.icet.arogya.security.UserPrincipal;
+import edu.icet.arogya.security.user.UserPrincipal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

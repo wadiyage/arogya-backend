@@ -1,4 +1,4 @@
-package edu.icet.arogya.security;
+package edu.icet.arogya.security.user;
 
 import edu.icet.arogya.modules.user.entity.User;
 import edu.icet.arogya.modules.user.repository.UserRepository;

@@ -3,7 +3,7 @@ package edu.icet.arogya.modules.appointment.controller;
 import edu.icet.arogya.modules.appointment.dto.AppointmentResponse;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import edu.icet.arogya.modules.appointment.service.DoctorAppointmentService;
-import edu.icet.arogya.security.UserPrincipal;
+import edu.icet.arogya.security.user.UserPrincipal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

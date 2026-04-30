@@ -14,7 +14,7 @@ import edu.icet.arogya.modules.user.entity.enums.RoleName;
 import edu.icet.arogya.modules.user.entity.User;
 import edu.icet.arogya.modules.user.repository.RoleRepository;
 import edu.icet.arogya.modules.user.repository.UserRepository;
-import edu.icet.arogya.security.JwtService;
+import edu.icet.arogya.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

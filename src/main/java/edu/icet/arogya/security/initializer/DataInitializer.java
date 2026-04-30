@@ -1,4 +1,4 @@
-package edu.icet.arogya.security;
+package edu.icet.arogya.security.initializer;
 
 import edu.icet.arogya.modules.user.entity.Role;
 import edu.icet.arogya.modules.user.entity.enums.RoleName;

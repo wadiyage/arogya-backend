@@ -7,6 +7,8 @@ import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import edu.icet.arogya.modules.appointment.repository.AppointmentRepository;
 import edu.icet.arogya.modules.doctor.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Service
 @RequiredArgsConstructor
 public class AdminDashboardServiceImpl implements AdminDashboardService {
 
@@ -22,6 +25,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final DoctorRepository doctorRepository;
 
     @Override
+    @Cacheable(value = "dashboardOverview", sync = true)
     public DashboardOverviewResponse getOverview() {
         long totalAppointments = appointmentRepository.countTotalAppointments();
 
@@ -59,6 +63,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     }
 
     @Override
+    @Cacheable(value = "dashboardTrends", key = "#days + '_' + T(java.time.LocalDate).now()")
     public List<AppointmentTrendResponse> getTrends(int days) {
 
         LocalDate endDate = LocalDate.now();
@@ -78,6 +83,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     }
 
     @Override
+    @Cacheable(value = "dashboardDoctorWorkload", key = "#date.toString()")
     public List<DoctorWorkloadResponse> getDoctorWorkload(LocalDate date) {
         List<Object[]> results = appointmentRepository.findDoctorWorkload(date);
         return results.stream()
@@ -91,6 +97,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     }
 
     @Override
+    @Cacheable(value = "dashboardCancellations", key = "#days + '_' + T(java.time.LocalDate).now()")
     public List<CancellationSummaryResponse> getCancellations(int days) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(days);
@@ -105,7 +112,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         List<CancellationSummaryResponse> response = new ArrayList<>();
 
-        for (int i=0; i<days; i++) {
+        for (int i=0; i<=days; i++) {
             LocalDate date = startDate.plusDays(i);
 
             response.add(
@@ -119,6 +126,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     }
 
     @Override
+    @Cacheable(value = "dashboardNoShows", key = "#days + '_' + T(java.time.LocalDate).now()")
     public List<NoShowSummaryResponse> getNoShows(int days) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(days);
@@ -133,7 +141,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         List<NoShowSummaryResponse> response = new ArrayList<>();
 
-        for (int i=0; i<days; i++) {
+        for (int i=0; i<=days; i++) {
             LocalDate date = startDate.plusDays(i);
 
             response.add(

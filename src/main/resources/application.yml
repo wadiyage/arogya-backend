@@ -23,6 +23,17 @@ spring:
       indent_output: true
     time-zone: Asia/Colombo
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 6000ms
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000ms # 10 minutes in milliseconds
+
 server:
   port: 8080
 

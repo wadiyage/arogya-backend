@@ -1,4 +1,4 @@
-package edu.icet.arogya.security;
+package edu.icet.arogya.security.jwt;
 
 import lombok.Getter;
 import lombok.Setter;
