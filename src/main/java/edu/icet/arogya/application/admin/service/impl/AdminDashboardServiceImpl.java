@@ -2,6 +2,7 @@ package edu.icet.arogya.application.admin.service.impl;
 
 import edu.icet.arogya.application.admin.dto.dashboard.*;
 import edu.icet.arogya.application.admin.service.AdminDashboardService;
+import edu.icet.arogya.common.utils.DateUtils;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import edu.icet.arogya.modules.appointment.repository.AppointmentRepository;
 import edu.icet.arogya.modules.doctor.repository.DoctorRepository;
@@ -68,7 +69,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         return results.stream()
                 .map(row -> AppointmentTrendResponse.builder()
-                            .date(row[0].toString())
+                            .date(DateUtils.format((LocalDate) row[0]))
                             .totalAppointments(((Number) row[1]).longValue())
                             .completedAppointments(((Number) row[2]).longValue())
                             .cancelledAppointments(((Number) row[3]).longValue())
@@ -104,12 +105,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         List<CancellationSummaryResponse> response = new ArrayList<>();
 
-        for (int i=0; i<=days; i++) {
+        for (int i=0; i<days; i++) {
             LocalDate date = startDate.plusDays(i);
 
             response.add(
                     CancellationSummaryResponse.builder()
-                            .date(date.toString())
+                            .date(DateUtils.format(date))
                             .cancellations(map.getOrDefault(date, 0L))
                             .build()
             );
@@ -132,12 +133,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         List<NoShowSummaryResponse> response = new ArrayList<>();
 
-        for (int i=0; i<=days; i++) {
+        for (int i=0; i<days; i++) {
             LocalDate date = startDate.plusDays(i);
 
             response.add(
                     NoShowSummaryResponse.builder()
-                            .date(date.toString())
+                            .date(DateUtils.format(date))
                             .noShows(map.getOrDefault(date, 0L))
                             .build()
             );
