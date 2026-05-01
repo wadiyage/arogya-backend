@@ -1,6 +1,7 @@
 package edu.icet.arogya.config;
 
 import lombok.NonNull;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableCaching
+@ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
 public class RedisCacheConfig {
 
     @Bean

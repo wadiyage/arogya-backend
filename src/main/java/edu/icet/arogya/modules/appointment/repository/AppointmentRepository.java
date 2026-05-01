@@ -93,8 +93,8 @@ public interface AppointmentRepository extends
             SELECT
                 a.appointmentDate,
                 COUNT(a),
-                SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.COMPLETED THEN 1 ELSE 0 END),
-                SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.CANCELLED THEN 1 ELSE 0 END)
+                SUM(CASE WHEN a.status = AppointmentStatus.COMPLETED THEN 1 ELSE 0 END),
+                SUM(CASE WHEN a.status = AppointmentStatus.CANCELLED THEN 1 ELSE 0 END)
             FROM Appointment a
             WHERE a.appointmentDate BETWEEN :start AND :end
             GROUP BY a.appointmentDate
@@ -122,7 +122,7 @@ public interface AppointmentRepository extends
     @Query("""
             SELECT a.appointmentDate, COUNT(a)
             FROM Appointment a
-            WHERE a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.CANCELLED
+            WHERE a.status = AppointmentStatus.CANCELLED
                 AND a.appointmentDate BETWEEN :start AND :end
             GROUP BY a.appointmentDate
             ORDER BY a.appointmentDate
@@ -133,7 +133,7 @@ public interface AppointmentRepository extends
     @Query("""
             SELECT a.appointmentDate, COUNT(a)
             FROM Appointment a
-            WHERE a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.NO_SHOW
+            WHERE a.status = AppointmentStatus.NO_SHOW
                 AND a.appointmentDate BETWEEN :start AND :end
             GROUP BY a.appointmentDate
             ORDER BY a.appointmentDate

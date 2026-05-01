@@ -30,7 +30,7 @@ spring:
       timeout: 6000ms
 
   cache:
-    type: redis
+    type: simple # redis
     redis:
       time-to-live: 600000ms # 10 minutes in milliseconds
 
