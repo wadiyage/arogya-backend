@@ -19,4 +19,8 @@ public class AppointmentFilterRequest {
 
     private LocalDate fromDate;
     private LocalDate toDate;
+
+    private Boolean includeCancelled;
+    private Boolean includePast;
+    private Boolean todayOnly;
 }

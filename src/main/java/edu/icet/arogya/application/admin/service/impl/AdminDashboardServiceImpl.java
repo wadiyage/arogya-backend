@@ -85,7 +85,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     @Override
     @Cacheable(value = "dashboardDoctorWorkload", key = "#date.toString()")
     public List<DoctorWorkloadResponse> getDoctorWorkload(LocalDate date) {
-        List<Object[]> results = appointmentRepository.findDoctorWorkload(date);
+        List<Object[]> results = appointmentRepository.findDoctorWorkload(date, AppointmentStatus.COMPLETED);
         return results.stream()
                 .map(row -> DoctorWorkloadResponse.builder()
                             .doctorId((UUID) row[0])

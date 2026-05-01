@@ -19,7 +19,7 @@ public interface DoctorRepository extends JpaRepository<@NonNull Doctor, @NonNul
     @Query("""
             SELECT COUNT(d)
             FROM Doctor d
-            WHERE d.isAvailable = true
+            WHERE d.available = true
             """)
     long countActiveDoctors();
 }

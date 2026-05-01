@@ -90,8 +90,8 @@ public interface AppointmentRepository extends
 
 
     @Query("""
-            SELECT 
-                a.appointmentDate, 
+            SELECT
+                a.appointmentDate,
                 COUNT(a),
                 SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.COMPLETED THEN 1 ELSE 0 END),
                 SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.CANCELLED THEN 1 ELSE 0 END)
@@ -106,14 +106,17 @@ public interface AppointmentRepository extends
     @Query("""
             SELECT
                 a.doctor.id,
-                a.doctor.user.fullName,
+                a.doctor.fullName,
                 COUNT(a),
-                SUM(CASE WHEN a.status = edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus.COMPLETED THEN 1 ELSE 0 END)
+                SUM(CASE WHEN a.status = :completedStatus THEN 1 ELSE 0 END)
             FROM Appointment a
             WHERE a.appointmentDate = :date
-            GROUP BY a.doctor.id, a.doctor.user.fullName
+            GROUP BY a.doctor.id, a.doctor.fullName
             """)
-    List<Object[]> findDoctorWorkload(LocalDate date);
+    List<Object[]> findDoctorWorkload(
+            LocalDate date,
+            AppointmentStatus completedStatus
+    );
 
 
     @Query("""

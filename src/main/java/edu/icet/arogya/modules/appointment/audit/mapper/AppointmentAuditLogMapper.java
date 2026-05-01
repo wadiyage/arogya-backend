@@ -2,7 +2,9 @@ package edu.icet.arogya.modules.appointment.audit.mapper;
 
 import edu.icet.arogya.modules.appointment.audit.dto.AppointmentAuditLogResponse;
 import edu.icet.arogya.modules.appointment.audit.entity.AppointmentAuditLog;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AppointmentAuditLogMapper {
     public AppointmentAuditLogResponse mapToResponse(AppointmentAuditLog log) {
         return AppointmentAuditLogResponse.builder()
