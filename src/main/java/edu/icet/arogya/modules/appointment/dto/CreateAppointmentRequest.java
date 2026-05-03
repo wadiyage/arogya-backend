@@ -12,10 +12,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class CreateAppointmentRequest {
-    private UUID doctorId;
-    private LocalDate appointmentDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private UUID scheduleId;
+
     private String reason;
     private String notes;
+
+    private Boolean walkIn;
 }

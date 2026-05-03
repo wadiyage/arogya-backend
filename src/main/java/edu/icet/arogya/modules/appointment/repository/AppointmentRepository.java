@@ -2,6 +2,7 @@ package edu.icet.arogya.modules.appointment.repository;
 
 import edu.icet.arogya.modules.appointment.entity.Appointment;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
+import edu.icet.arogya.modules.appointment.schedule.entity.DoctorSchedule;
 import edu.icet.arogya.modules.doctor.entity.Doctor;
 import edu.icet.arogya.modules.patient.entity.Patient;
 import lombok.NonNull;
@@ -139,4 +140,7 @@ public interface AppointmentRepository extends
             ORDER BY a.appointmentDate
             """)
     List<Object[]> findDailyNoShows(LocalDate start, LocalDate end);
+
+    List<Appointment> findByScheduleOrderByTokenNumber(DoctorSchedule schedule);
+    boolean existsByPatientAndScheduleAndDeletedFalse(Patient patient, DoctorSchedule schedule);
 }

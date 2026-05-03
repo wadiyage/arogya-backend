@@ -4,6 +4,7 @@ import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -21,12 +22,22 @@ public class AppointmentResponse {
     private UUID doctorId;
     private String doctorName;
 
-    private LocalDate appointmentDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private UUID scheduleId;
+
+    private String locationName;
+
+    private LocalDate scheduleDate;
+
+    private Integer tokenNumber;
 
     private AppointmentStatus status;
 
     private String reason;
     private String notes;
+
+    private LocalDateTime checkInTime;
+    private LocalDateTime consultationStartTime;
+    private LocalDateTime consultationEndTime;
+
+    private LocalDateTime createdAt;
 }

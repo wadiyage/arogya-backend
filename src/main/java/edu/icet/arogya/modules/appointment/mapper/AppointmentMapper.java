@@ -9,16 +9,29 @@ public class AppointmentMapper {
     public AppointmentResponse mapToResponse(Appointment appointment) {
         return AppointmentResponse.builder()
                 .id(appointment.getId())
+
                 .patientId(appointment.getPatient().getId())
                 .patientName(appointment.getPatient().getFullName())
-                .doctorId(appointment.getDoctor().getId())
-                .doctorName(appointment.getDoctor().getFullName())
-                .appointmentDate(appointment.getAppointmentDate())
-                .startTime(appointment.getStartTime())
-                .endTime(appointment.getEndTime())
+
+                .doctorId(appointment.getSchedule().getDoctor().getId())
+                .doctorName(appointment.getSchedule().getDoctor().getFullName())
+
+                .scheduleId(appointment.getSchedule().getId())
+                .locationName(appointment.getSchedule().getLocation().getName())
+                .scheduleDate(appointment.getSchedule().getScheduleDate())
+
+                .tokenNumber(appointment.getTokenNumber())
+
                 .status(appointment.getStatus())
+
                 .reason(appointment.getReason())
                 .notes(appointment.getNotes())
+
+                .checkInTime(appointment.getCheckInTime())
+                .consultationStartTime(appointment.getConsultationStartTime())
+                .consultationEndTime(appointment.getConsultationEndTime())
+
+                .createdAt(appointment.getCreatedAt())
                 .build();
     }
 }

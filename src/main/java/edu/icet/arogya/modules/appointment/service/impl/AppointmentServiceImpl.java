@@ -5,6 +5,7 @@ import edu.icet.arogya.modules.appointment.dto.CreateAppointmentRequest;
 import edu.icet.arogya.modules.appointment.entity.Appointment;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import edu.icet.arogya.modules.appointment.repository.AppointmentRepository;
+import edu.icet.arogya.modules.appointment.schedule.entity.DoctorSchedule;
 import edu.icet.arogya.modules.appointment.service.AppointmentService;
 import edu.icet.arogya.modules.doctor.entity.Doctor;
 import edu.icet.arogya.modules.patient.entity.Patient;
@@ -23,34 +24,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
 
     @Override
-    public Appointment book(Patient patient, Doctor doctor, CreateAppointmentRequest request) {
-        if(request.getStartTime().isAfter(request.getEndTime())) {
-            throw new BadRequestException("Start time must be before end time");
-        }
+    public Appointment book(Patient patient, DoctorSchedule schedule, CreateAppointmentRequest request) {
+        int nextToken = schedule.getBookedTokens() + 1;
 
-        boolean exists = appointmentRepository.existsOverlappingAppointment(
-                doctor,
-                request.getAppointmentDate(),
-                request.getStartTime(),
-                request.getEndTime(),
-                List.of(
-                        AppointmentStatus.PENDING,
-                        AppointmentStatus.CONFIRMED,
-                        AppointmentStatus.CHECKED_IN,
-                        AppointmentStatus.IN_PROGRESS
-                )
-        );
-
-        if(exists) {
-            throw new BadRequestException("Doctor is not available at the requested time");
+        if (nextToken > schedule.getMaxTokens()) {
+            throw new BadRequestException("No available slots for the selected schedule");
         }
 
         Appointment appointment = Appointment.builder()
                 .patient(patient)
-                .doctor(doctor)
-                .appointmentDate(request.getAppointmentDate())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
+                .schedule(schedule)
+                .tokenNumber(nextToken)
                 .status(AppointmentStatus.CONFIRMED)
                 .reason(request.getReason())
                 .notes(request.getNotes())
@@ -81,10 +65,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         appointment.setStatus(status);
-
-        if(status == AppointmentStatus.COMPLETED) {
-            appointment.setCompletedAt(LocalDateTime.now());
-        }
+        status.apply(appointment);
         return appointmentRepository.save(appointment);
     }
 }

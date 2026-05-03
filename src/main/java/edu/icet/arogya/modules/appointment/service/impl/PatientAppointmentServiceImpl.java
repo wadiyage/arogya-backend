@@ -11,6 +11,8 @@ import edu.icet.arogya.modules.appointment.entity.Appointment;
 import edu.icet.arogya.modules.appointment.entity.enums.AppointmentStatus;
 import edu.icet.arogya.modules.appointment.mapper.AppointmentMapper;
 import edu.icet.arogya.modules.appointment.repository.AppointmentRepository;
+import edu.icet.arogya.modules.appointment.schedule.entity.DoctorSchedule;
+import edu.icet.arogya.modules.appointment.schedule.repository.DoctorScheduleRepository;
 import edu.icet.arogya.modules.appointment.service.AppointmentService;
 import edu.icet.arogya.modules.appointment.service.PatientAppointmentService;
 import edu.icet.arogya.modules.doctor.entity.Doctor;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +37,7 @@ import java.util.UUID;
 public class PatientAppointmentServiceImpl implements PatientAppointmentService {
 
     private final PatientRepository patientRepository;
-    private final DoctorRepository doctorRepository;
+    private final DoctorScheduleRepository doctorScheduleRepository;
     private final AppointmentRepository appointmentRepository;
 
     private final AppointmentService appointmentService;
@@ -45,13 +48,35 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
 
     @Override
     public AppointmentResponse bookAppointment(UUID userId, CreateAppointmentRequest request) {
+        if(request.getScheduleId() == null) {
+            throw new BadRequestException("Schedule ID is required.");
+        }
+
         Patient patient = patientRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found for userId: " + userId));
 
-        Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + request.getDoctorId()));
+        DoctorSchedule schedule = doctorScheduleRepository.findByIdForUpdate(request.getScheduleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found with ID: " + request.getScheduleId()));
 
-        Appointment appointment = appointmentService.book(patient, doctor, request);
+        if(!Boolean.TRUE.equals(schedule.getActive())) {
+            throw new BadRequestException("Selected time slot is no longer available.");
+        }
+
+        if(schedule.getScheduleDate().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Cannot book appointments for past dates.");
+        }
+
+        if(schedule.getBookedTokens() >= schedule.getMaxTokens()) {
+            throw new BadRequestException("Selected time slot is fully booked.");
+        }
+
+        boolean alreadyBooked = appointmentRepository.existsByPatientAndScheduleAndDeletedFalse(patient, schedule);
+
+        if(alreadyBooked) {
+            throw new BadRequestException("You have already booked an appointment for this time slot.");
+        }
+
+        Appointment appointment = appointmentService.book(patient, schedule, request);
         appointmentAuditService.logStatusChange(
                 AppointmentAuditLogRequest.builder()
                         .appointment(appointment)
@@ -96,8 +121,21 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
             throw new BadRequestException("Appointment is already canceled.");
         }
 
-        if(appointment.getAppointmentDate().isBefore(LocalDate.now())) {
+        if(oldStatus == AppointmentStatus.COMPLETED) {
+            throw new BadRequestException("Cannot cancel a completed appointment.");
+        }
+
+        if(oldStatus == AppointmentStatus.IN_PROGRESS) {
+            throw new BadRequestException("Cannot cancel an appointment that is in progress.");
+        }
+
+        if(appointment.getSchedule().getScheduleDate().isBefore(LocalDate.now())) {
             throw new BadRequestException("Cannot cancel past appointments.");
+        }
+
+        LocalDateTime cancellationDeadline = appointment.getSchedule().getScheduleDate().atStartOfDay().minusHours(2);
+        if(LocalDateTime.now().isAfter(cancellationDeadline)) {
+            throw new BadRequestException("Cancellations must be made at least 2 hours before the scheduled time.");
         }
 
         appointmentService.cancel(appointment);
