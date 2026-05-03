@@ -8,9 +8,10 @@ import java.util.UUID;
 
 public interface DoctorAppointmentService {
     List<AppointmentResponse> getMySchedule(UUID userId);
+    AppointmentResponse callNextPatient(UUID userId);
     AppointmentResponse updateAppointmentStatus(
             UUID userId,
             UUID appointmentId,
-            AppointmentStatus status
+            AppointmentStatus newStatus
     );
 }

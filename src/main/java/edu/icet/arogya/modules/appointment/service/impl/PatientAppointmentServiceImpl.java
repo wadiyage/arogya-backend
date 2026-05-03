@@ -80,7 +80,7 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
         appointmentAuditService.logStatusChange(
                 AppointmentAuditLogRequest.builder()
                         .appointment(appointment)
-                        .oldStatus(null)
+                        .currentStatus(null)
                         .newStatus(appointment.getStatus())
                         .actionType(AuditActionType.APPOINTMENT_BOOKED)
                         .reason("Appointment booked")
@@ -143,7 +143,7 @@ public class PatientAppointmentServiceImpl implements PatientAppointmentService 
         appointmentAuditService.logStatusChange(
                 AppointmentAuditLogRequest.builder()
                         .appointment(appointment)
-                        .oldStatus(oldStatus)
+                        .currentStatus(oldStatus)
                         .newStatus(AppointmentStatus.CANCELLED)
                         .actionType(AuditActionType.APPOINTMENT_CANCELLED_BY_PATIENT)
                         .reason("Cancelled by patient")

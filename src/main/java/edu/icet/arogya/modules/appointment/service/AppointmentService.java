@@ -9,5 +9,5 @@ import edu.icet.arogya.modules.patient.entity.Patient;
 public interface AppointmentService {
     Appointment book(Patient patient, DoctorSchedule schedule, CreateAppointmentRequest request);
     void cancel(Appointment appointment);
-    Appointment updateStatus(Appointment appointment, AppointmentStatus status);
+    Appointment updateStatus(Appointment appointment, AppointmentStatus newStatus);
 }

@@ -29,7 +29,14 @@ public class DoctorAppointmentController {
         return ResponseEntity.ok(doctorAppointmentService.getMySchedule(user.getId()));
     }
 
-    @PutMapping("/{appointmentId}/status")
+    @PostMapping("/next")
+    public ResponseEntity<@NonNull AppointmentResponse> callNextPatient(
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        return ResponseEntity.ok(doctorAppointmentService.callNextPatient(user.getId()));
+    }
+
+    @PatchMapping("/{appointmentId}/status")
     public ResponseEntity<@NonNull AppointmentResponse> updateAppointmentStatus(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable UUID appointmentId,

@@ -16,7 +16,7 @@ import java.util.UUID;
 public class AppointmentAuditLogRequest {
     private Appointment appointment;
 
-    private AppointmentStatus oldStatus;
+    private AppointmentStatus currentStatus;
     private AppointmentStatus newStatus;
 
     private AuditActionType actionType;

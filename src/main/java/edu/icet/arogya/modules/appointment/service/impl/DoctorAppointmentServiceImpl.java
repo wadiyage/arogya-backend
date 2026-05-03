@@ -43,7 +43,7 @@ public class DoctorAppointmentServiceImpl implements DoctorAppointmentService {
         Doctor doctor = doctorRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for userId: " + userId));
 
-        List<Appointment> appointments = appointmentRepository.findByDoctorAndAppointmentDateAndStatusIn(
+        List<Appointment> appointments = appointmentRepository.findTodayQueue(
                 doctor,
                 LocalDate.now(),
                 List.of(
@@ -54,20 +54,48 @@ public class DoctorAppointmentServiceImpl implements DoctorAppointmentService {
         );
 
         return appointments.stream()
-                .sorted(Comparator.comparing(Appointment::getStartTime))
+                .sorted(Comparator.comparing(Appointment::getTokenNumber))
                 .map(appointmentMapper::mapToResponse)
                 .toList();
     }
 
     @Override
-    public AppointmentResponse updateAppointmentStatus(UUID userId, UUID appointmentId, AppointmentStatus status) {
+    public AppointmentResponse callNextPatient(UUID userId) {
+        Doctor doctor = doctorRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for userId: " + userId));
+
+        Appointment next = appointmentRepository.findQueueOrdered(doctor, LocalDate.now())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No patients in queue for today"));
+
+        Appointment updated = appointmentService.updateStatus(next, AppointmentStatus.IN_PROGRESS);
+
+        appointmentAuditService.logStatusChange(
+                AppointmentAuditLogRequest.builder()
+                        .appointment(next)
+                        .currentStatus(AppointmentStatus.CHECKED_IN)
+                        .newStatus(AppointmentStatus.IN_PROGRESS)
+                        .actionType(AuditActionType.APPOINTMENT_STATUS_UPDATED)
+                        .reason("Called next patient")
+                        .userId(userId)
+                        .userRole(doctor.getUser().getRole().getName())
+                        .metadata(null)
+                        .build()
+        );
+
+        return appointmentMapper.mapToResponse(updated);
+    }
+
+    @Override
+    public AppointmentResponse updateAppointmentStatus(UUID userId, UUID appointmentId, AppointmentStatus newStatus) {
         Doctor doctor = doctorRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for userId: " + userId));
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
 
-        if(!appointment.getDoctor().getId().equals(doctor.getId())) {
+        if(!appointment.getSchedule().getDoctor().getId().equals(doctor.getId())) {
             throw new UnauthorizedException("Appointment does not belong to the specified doctor");
         }
 
@@ -75,26 +103,44 @@ public class DoctorAppointmentServiceImpl implements DoctorAppointmentService {
             throw new BadRequestException("Doctor is currently unavailable to update appointment status");
         }
 
-        AppointmentStatus oldStatus = appointment.getStatus();
+        AppointmentStatus currentstatus = appointment.getStatus();
 
-        if(status == AppointmentStatus.CANCELLED) {
+        if(newStatus == AppointmentStatus.CANCELLED) {
             throw new BadRequestException("Doctors cannot cancel appointments. Please ask the patient to cancel.");
         }
 
-        if(status == AppointmentStatus.COMPLETED && oldStatus != AppointmentStatus.IN_PROGRESS) {
-            throw new BadRequestException("Only appointments that are in progress can be marked as completed.");
+        if(currentstatus == AppointmentStatus.CANCELLED) {
+            throw new BadRequestException("Cannot update status of a cancelled appointment");
+        }
+
+        if(currentstatus == AppointmentStatus.COMPLETED) {
+            throw new BadRequestException("Cannot update status of a completed appointment");
+        }
+
+        switch (newStatus) {
+            case CHECKED_IN -> {
+                if (currentstatus != AppointmentStatus.CONFIRMED) {
+                    throw new BadRequestException("Only confirmed appointments can be checked in");
+                }
+            }
+            case COMPLETED -> {
+                if(currentstatus != AppointmentStatus.IN_PROGRESS) {
+                    throw new BadRequestException("Only appointments in progress can be marked as completed");
+                }
+            }
+            default -> throw new BadRequestException("Invalid status update");
         }
 
         Appointment updated = appointmentService.updateStatus(
                 appointment,
-                status
+                newStatus
         );
 
         appointmentAuditService.logStatusChange(
                 AppointmentAuditLogRequest.builder()
                         .appointment(appointment)
-                        .oldStatus(oldStatus)
-                        .newStatus(status)
+                        .currentStatus(currentstatus)
+                        .newStatus(newStatus)
                         .actionType(AuditActionType.APPOINTMENT_STATUS_UPDATED)
                         .reason("Updated by doctor")
                         .userId(userId)

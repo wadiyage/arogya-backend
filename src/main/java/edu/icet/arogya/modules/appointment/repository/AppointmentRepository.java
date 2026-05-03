@@ -13,55 +13,17 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AppointmentRepository extends
         JpaRepository<@NonNull Appointment,@NonNull UUID>,
         JpaSpecificationExecutor<@NonNull Appointment>
 {
-    List<Appointment> findByDoctorAndAppointmentDate(
-            Doctor doctor,
-            LocalDate appointmentDate
-    );
-
     Page<@NonNull Appointment> findByPatient(Patient patient, Pageable pageable);
 
-    List<Appointment> findByDoctorAndStatus(
-            Doctor doctor,
-            AppointmentStatus status
-    );
-
-    List<Appointment> findByDoctorAndAppointmentDateBetween(
-            Doctor doctor,
-            LocalDate startDate,
-            LocalDate endDate
-    );
-
-    List<Appointment> findByDoctorAndAppointmentDateAndStatusIn(
-            Doctor doctor,
-            LocalDate appointmentDate,
-            List<AppointmentStatus> statuses
-    );
-
-    @Query("""
-            SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END
-            FROM Appointment a
-            WHERE a.doctor = :doctor
-                AND a.appointmentDate = :date
-                AND a.status IN :statuses
-                AND (
-                (:startTime < a.endTime AND :endTime > a.startTime)
-                )
-            """)
-    boolean existsOverlappingAppointment(
-            Doctor doctor,
-            LocalDate date,
-            LocalTime startTime,
-            LocalTime endTime,
-            List<AppointmentStatus> statuses
-    );
+    boolean existsByPatientAndScheduleAndDeletedFalse(Patient patient, DoctorSchedule schedule);
 
 
     @Query("SELECT COUNT(a) FROM Appointment a")
@@ -141,6 +103,29 @@ public interface AppointmentRepository extends
             """)
     List<Object[]> findDailyNoShows(LocalDate start, LocalDate end);
 
-    List<Appointment> findByScheduleOrderByTokenNumber(DoctorSchedule schedule);
-    boolean existsByPatientAndScheduleAndDeletedFalse(Patient patient, DoctorSchedule schedule);
+
+    @Query("""
+            SELECT a
+            FROM Appointment a
+            WHERE a.schedule.doctor = :doctor
+            AND a.schedule.scheduleDate = :date
+            AND a.status IN :statuses
+            AND a.deleted = false
+            """)
+    List<Appointment> findTodayQueue(
+            Doctor doctor,
+            LocalDate date,
+            List<AppointmentStatus> statuses
+    );
+
+    @Query("""
+            SELECT a
+            FROM Appointment a
+            WHERE a.schedule.doctor = :doctor
+            AND a.schedule.scheduleDate = :date
+            AND a.status IN ('CONFIRMED', 'CHECKED_IN')
+            AND a.deleted = false
+            ORDER BY a.tokenNumber ASC
+            """)
+    Optional<Appointment> findQueueOrdered(Doctor doctor, LocalDate date);
 }
