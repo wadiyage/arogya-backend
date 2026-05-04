@@ -1,7 +1,7 @@
 package edu.icet.arogya.modules.doctor.mapper;
 
 import edu.icet.arogya.modules.doctor.dto.DoctorDetailsResponse;
-import edu.icet.arogya.application.admin.dto.doctor.DoctorResponse;
+import edu.icet.arogya.application.admin.doctor.dto.DoctorResponse;
 import edu.icet.arogya.modules.doctor.entity.Doctor;
 import org.springframework.stereotype.Component;
 

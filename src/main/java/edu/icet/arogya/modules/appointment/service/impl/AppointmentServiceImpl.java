@@ -31,6 +31,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new BadRequestException("No available slots for the selected schedule");
         }
 
+        schedule.setBookedTokens(nextToken);
+
+        if(nextToken == schedule.getMaxTokens()) {
+            schedule.setActive(false);
+        }
+
         Appointment appointment = Appointment.builder()
                 .patient(patient)
                 .schedule(schedule)
@@ -48,8 +54,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         if(appointment.getStatus() == AppointmentStatus.CANCELLED) {
             throw new BadRequestException("Appointment is already canceled");
         }
+
+        DoctorSchedule schedule = appointment.getSchedule();
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setCancelledAt(LocalDateTime.now());
+
+        if(schedule.getBookedTokens() > 0) {
+            schedule.setBookedTokens(schedule.getBookedTokens() - 1);
+        }
+
+        if(!Boolean.TRUE.equals(schedule.getActive())) {
+            schedule.setActive(true);
+        }
 
         appointmentRepository.save(appointment);
     }
