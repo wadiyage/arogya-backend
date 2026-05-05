@@ -26,7 +26,7 @@ public class AppointmentAuditServiceImpl implements AppointmentAuditService {
     public void logStatusChange(AppointmentAuditLogRequest request) {
         AppointmentAuditLog auditLog = AppointmentAuditLog.builder()
                 .appointment(request.getAppointment())
-                .oldStatus(request.getOldStatus())
+                .oldStatus(request.getCurrentStatus())
                 .newStatus(request.getNewStatus())
                 .actionType(request.getActionType())
                 .reason(request.getReason())

@@ -72,11 +72,11 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
 
-        AppointmentStatus oldStatus = appointment.getStatus();
+        AppointmentStatus currentStatus = appointment.getStatus();
 
-        validate(oldStatus, status);
+        validate(currentStatus, status);
 
-        if(appointment.getAppointmentDate().isBefore(LocalDate.now())) {
+        if(appointment.getSchedule().getScheduleDate().isBefore(LocalDate.now())) {
             throw new BadRequestException("Cannot change status of past appointments");
         }
 
@@ -85,7 +85,7 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         appointmentAuditService.logStatusChange(
                 AppointmentAuditLogRequest.builder()
                         .appointment(updated)
-                        .oldStatus(oldStatus)
+                        .currentStatus(currentStatus)
                         .newStatus(status)
                         .actionType(AuditActionType.APPOINTMENT_STATUS_OVERRIDDEN)
                         .reason(reason)
@@ -110,16 +110,16 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
 
-        AppointmentStatus oldStatus = appointment.getStatus();
-        if(oldStatus == AppointmentStatus.COMPLETED) {
+        AppointmentStatus currentStatus = appointment.getStatus();
+        if(currentStatus == AppointmentStatus.COMPLETED) {
             throw new BadRequestException("Cannot cancel a completed appointment");
         }
 
-        if(oldStatus == AppointmentStatus.CANCELLED) {
+        if(currentStatus == AppointmentStatus.CANCELLED) {
             throw new BadRequestException("Appointment is already cancelled");
         }
 
-        if(appointment.getAppointmentDate().isBefore(LocalDate.now())) {
+        if(appointment.getSchedule().getScheduleDate().isBefore(LocalDate.now())) {
             throw new BadRequestException("Cannot change status of past appointments");
         }
 
@@ -128,7 +128,7 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
         appointmentAuditService.logStatusChange(
                 AppointmentAuditLogRequest.builder()
                         .appointment(appointment)
-                        .oldStatus(oldStatus)
+                        .currentStatus(currentStatus)
                         .newStatus(AppointmentStatus.CANCELLED)
                         .actionType(AuditActionType.APPOINTMENT_CANCELLED_BY_ADMIN)
                         .reason("Force cancelled by admin")
@@ -156,8 +156,8 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
             Appointment appointment = appointmentRepository.findById(appointmentId)
                     .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
 
-            AppointmentStatus oldStatus = appointment.getStatus();
-            if(oldStatus == AppointmentStatus.COMPLETED || oldStatus == AppointmentStatus.CANCELLED) {
+            AppointmentStatus currentStatus = appointment.getStatus();
+            if(currentStatus == AppointmentStatus.COMPLETED || currentStatus == AppointmentStatus.CANCELLED) {
                 continue; // Skip appointments that are already completed or cancelled
             }
 
@@ -165,7 +165,7 @@ public class AdminAppointmentServiceImpl implements AdminAppointmentService {
             appointmentAuditService.logStatusChange(
                     AppointmentAuditLogRequest.builder()
                             .appointment(appointment)
-                            .oldStatus(oldStatus)
+                            .currentStatus(currentStatus)
                             .newStatus(AppointmentStatus.CANCELLED)
                             .actionType(AuditActionType.APPOINTMENT_BULK_CANCELLED)
                             .reason(reason != null ? reason : "Force cancelled by admin")

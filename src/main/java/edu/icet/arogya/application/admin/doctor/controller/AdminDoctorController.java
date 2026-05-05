@@ -5,6 +5,7 @@ import edu.icet.arogya.application.admin.doctor.dto.CreateDoctorRequest;
 import edu.icet.arogya.application.admin.doctor.dto.DoctorResponse;
 import edu.icet.arogya.application.admin.doctor.service.AdminDoctorService;
 import edu.icet.arogya.modules.doctor.dto.DoctorDetailsResponse;
+import edu.icet.arogya.security.user.UserPrincipal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -25,24 +27,26 @@ public class AdminDoctorController {
     private final AdminDoctorService adminDoctorService;
 
     @PostMapping
-    public ResponseEntity<@NonNull DoctorResponse> createDoctor(@RequestBody CreateDoctorRequest request) {
-        return ResponseEntity.ok(adminDoctorService.createDoctor(request));
+    public ResponseEntity<@NonNull DoctorResponse> createDoctor(@AuthenticationPrincipal UserPrincipal user, @RequestBody CreateDoctorRequest request) {
+        return ResponseEntity.ok(adminDoctorService.createDoctor(user, request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<@NonNull DoctorDetailsResponse> updateDoctor(
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable UUID id,
             @RequestBody AdminUpdateDoctorRequest request
     ) {
-        return ResponseEntity.ok(adminDoctorService.updateDoctor(id, request));
+        return ResponseEntity.ok(adminDoctorService.updateDoctor(user, id, request));
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<@NonNull Void> deactivateDoctor(
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable UUID id,
             @RequestParam boolean available
     ) {
-        adminDoctorService.deactivateDoctor(id, available);
+        adminDoctorService.deactivateDoctor(user, id, available);
         return ResponseEntity.noContent().build();
     }
 

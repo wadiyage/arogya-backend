@@ -1,13 +1,19 @@
 package edu.icet.arogya.application.admin.patient.service.impl;
 
+import edu.icet.arogya.application.admin.audit.dto.CreateAuditLogRequest;
+import edu.icet.arogya.application.admin.audit.service.AdminAuditService;
 import edu.icet.arogya.application.admin.patient.dto.AdminUpdatePatientRequest;
 import edu.icet.arogya.application.admin.patient.service.AdminPatientService;
 import edu.icet.arogya.common.exception.UnauthorizedException;
+import edu.icet.arogya.modules.audit.entity.enums.AuditAction;
+import edu.icet.arogya.modules.audit.entity.enums.AuditEntityType;
 import edu.icet.arogya.modules.patient.dto.PatientDetailsResponse;
 import edu.icet.arogya.modules.patient.dto.PatientResponse;
 import edu.icet.arogya.modules.patient.entity.Patient;
 import edu.icet.arogya.modules.patient.mapper.PatientMapper;
 import edu.icet.arogya.modules.patient.repository.PatientRepository;
+import edu.icet.arogya.modules.user.entity.enums.RoleName;
+import edu.icet.arogya.security.user.UserPrincipal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +32,8 @@ public class AdminPatientServiceImpl implements AdminPatientService {
 
     private final PatientMapper patientMapper;
 
+    private final AdminAuditService auditService;
+
     @Override
     public PatientDetailsResponse getPatientDetails(UUID id) {
         Patient patient = patientRepository.findById(id)
@@ -41,7 +49,7 @@ public class AdminPatientServiceImpl implements AdminPatientService {
     }
 
     @Override
-    public PatientDetailsResponse updatePatient(UUID id, AdminUpdatePatientRequest request) {
+    public PatientDetailsResponse updatePatient(UserPrincipal user, UUID id, AdminUpdatePatientRequest request) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
 
@@ -83,22 +91,61 @@ public class AdminPatientServiceImpl implements AdminPatientService {
         }
 
         patientRepository.save(patient);
+
+        auditService.log(
+                CreateAuditLogRequest.builder()
+                        .userId(user.getId())
+                        .userRole(RoleName.valueOf(user.getRole()))
+                        .action(AuditAction.UPDATE)
+                        .entityType(AuditEntityType.PATIENT)
+                        .entityId(patient.getId())
+                        .description("Updated patient with name " + patient.getFullName())
+                        .metadata("active=" + patient.isActive())
+                        .build()
+        );
+
         return patientMapper.mapToDetailsResponse(patient);
     }
 
     @Override
-    public void deactivatePatient(UUID id) {
+    public void deactivatePatient(UserPrincipal user, UUID id) {
             Patient patient = patientRepository.findById(id)
                     .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
             patient.setActive(false);
+
+            auditService.log(
+                    CreateAuditLogRequest.builder()
+                            .userId(user.getId())
+                            .userRole(RoleName.valueOf(user.getRole()))
+                            .action(AuditAction.UPDATE)
+                            .entityType(AuditEntityType.PATIENT)
+                            .entityId(patient.getId())
+                            .description("Deactivated patient with name " + patient.getFullName())
+                            .metadata("active=" + patient.isActive())
+                            .build()
+            );
+
             patientRepository.save(patient);
     }
 
     @Override
-    public void activatePatient(UUID id) {
+    public void activatePatient(UserPrincipal user, UUID id) {
             Patient patient = patientRepository.findById(id)
                     .orElseThrow(() -> new UnauthorizedException("Patient not found with ID: " + id));
             patient.setActive(true);
+
+            auditService.log(
+                    CreateAuditLogRequest.builder()
+                            .userId(user.getId())
+                            .userRole(RoleName.valueOf(user.getRole()))
+                            .action(AuditAction.UPDATE)
+                            .entityType(AuditEntityType.PATIENT)
+                            .entityId(patient.getId())
+                            .description("Activated patient with name " + patient.getFullName())
+                            .metadata("active=" + patient.isActive())
+                            .build()
+            );
+
             patientRepository.save(patient);
     }
 }

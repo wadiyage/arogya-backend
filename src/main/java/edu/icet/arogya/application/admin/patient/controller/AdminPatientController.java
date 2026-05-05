@@ -4,6 +4,7 @@ import edu.icet.arogya.application.admin.patient.dto.AdminUpdatePatientRequest;
 import edu.icet.arogya.application.admin.patient.service.AdminPatientService;
 import edu.icet.arogya.modules.patient.dto.PatientDetailsResponse;
 import edu.icet.arogya.modules.patient.dto.PatientResponse;
+import edu.icet.arogya.security.user.UserPrincipal;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -36,19 +38,19 @@ public class AdminPatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<@NonNull PatientDetailsResponse> updatePatient(@PathVariable UUID id, @RequestBody AdminUpdatePatientRequest request) {
-        return ResponseEntity.ok(adminPatientService.updatePatient(id, request));
+    public ResponseEntity<@NonNull PatientDetailsResponse> updatePatient(@AuthenticationPrincipal UserPrincipal user, @PathVariable UUID id, @RequestBody AdminUpdatePatientRequest request) {
+        return ResponseEntity.ok(adminPatientService.updatePatient(user, id, request));
     }
 
     @PutMapping("/{id}/deactivate")
-    public ResponseEntity<@NonNull Void> deactivatePatient(@PathVariable UUID id) {
-        adminPatientService.deactivatePatient(id);
+    public ResponseEntity<@NonNull Void> deactivatePatient(@AuthenticationPrincipal UserPrincipal user, @PathVariable UUID id) {
+        adminPatientService.deactivatePatient(user, id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/activate")
-    public ResponseEntity<@NonNull Void> activatePatient(@PathVariable UUID id) {
-        adminPatientService.activatePatient(id);
+    public ResponseEntity<@NonNull Void> activatePatient(@AuthenticationPrincipal UserPrincipal user, @PathVariable UUID id) {
+        adminPatientService.activatePatient(user, id);
         return ResponseEntity.noContent().build();
     }
 }
